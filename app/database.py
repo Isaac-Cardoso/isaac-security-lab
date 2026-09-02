@@ -1,27 +1,5 @@
 import sqlite3
 
-conn = sqlite3.connect("data/security_lab.db")
-
-cursor = conn.cursor()
-
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        userID TEXT PRIMARY KEY,
-        firstName TEXT NOT NULL,
-        lastName TEXT NOT NULL,
-        department TEXT NOT NULL,
-        jobTitle TEXT NOT NULL
-    )
-""")
-
-cursor.execute("""
-    INSERT OR IGNORE INTO users
-    (userID, firstName, lastName, department, jobTitle)
-    VALUES (?, ?, ?, ?, ?)
-""", ("1001", "Isaac", "Cardoso", "Security", "IAM Engineer"))
-
-conn.commit()
-conn.close()
 
 def get_all_users():
     conn = sqlite3.connect("data/security_lab.db")
@@ -35,4 +13,24 @@ def get_all_users():
     conn.close()
     return users
 
+def create_user(userID, firstName, lastName, department, jobTitle):
+    conn = sqlite3.connect("data/security_lab.db")
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        INSERT INTO users
+        (userID, firstName, lastName, department, jobTitle)
+        values (?, ?, ?, ?, ?)
+    """, (userID, firstName, lastName, department, jobTitle))
+    
+    conn.commit()
+    conn.close()
+    
+    return {
+        "userID": userID,
+        "firstName": firstName,
+        "lastName": lastName,
+        "department": department,
+        "jobTitle": jobTitle
+    }
 
