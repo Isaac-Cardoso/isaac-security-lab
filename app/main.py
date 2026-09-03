@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from app.database import get_all_users
 from app.database import create_user
 from app.database import get_user_by_id
+from app.database import update_user_by_id
 import sqlite3
-from pydantic import BaseModel
 from fastapi import HTTPException
+from app.models import User
+from app.models import UserUpdate
 
 app = FastAPI()
 
@@ -15,13 +17,6 @@ def read_root():
 @app.get("/users")
 def get_users():
     return get_all_users()
-
-class User(BaseModel):
-    userID: str
-    firstName: str
-    lastName: str
-    department: str
-    jobTitle: str
 
 @app.post("/users", status_code=201)
 def add_user(user: User):
@@ -43,3 +38,23 @@ def get_user(user_id: str):
             status_code=404,
             detail="User not found"
         )
+
+@app.patch("/users/{user_id}")
+def update_user(user_id: str, user_update: UserUpdate):
+    existing_user = get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    updates = user_update.model_dump(exclude_unset=True)
+
+    if not updates:
+        raise HTTPException(
+            status_code=400,
+            detail="No fields provided for update"
+        )
+
+    update_user_by_id(user_id, updates)
+    return get_user_by_id(user_id)

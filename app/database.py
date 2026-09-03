@@ -4,13 +4,14 @@ import sqlite3
 def get_all_users():
     conn = sqlite3.connect("data/security_lab.db")
     conn.row_factory = sqlite3.Row
-    
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users")
-    
-    users = [dict(row) for row in cursor.fetchall()]
 
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users")
+        
+        users = [dict(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()
     return users
 
 def create_user(userID, firstName, lastName, department, jobTitle):
@@ -53,3 +54,25 @@ def get_user_by_id(user_id):
         return dict(user)
     
     return None
+
+def update_user_by_id(user_id, updates):
+    conn = sqlite3.connect("data/security_lab.db")
+    
+    try:
+        cursor = conn.cursor()
+        
+        set_clauses = []
+        values = []
+        for field, value in updates.items():
+            set_clauses.append(f"{field} = ?")
+            values.append(value)
+        
+        set_clause = ", ".join(set_clauses)
+        values.append(user_id)
+        
+        cursor.execute(f"UPDATE users SET {set_clause} WHERE userID = ?", values)
+        
+        conn.commit()
+    finally:
+        conn.close()
+
