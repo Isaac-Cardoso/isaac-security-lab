@@ -3,6 +3,11 @@ from app.database import get_all_users
 from app.database import create_user
 from app.database import get_user_by_id
 from app.database import update_user_by_id
+from app.database import set_lifecycle_state
+from app.database import assign_role_to_user
+from app.database import get_role_by_id
+from app.database import get_roles_for_user
+from app.database import remove_role_from_user
 import sqlite3
 from fastapi import HTTPException
 from app.models import User
@@ -58,3 +63,88 @@ def update_user(user_id: str, user_update: UserUpdate):
 
     update_user_by_id(user_id, updates)
     return get_user_by_id(user_id)
+
+@app.post("/users/{user_id}/disable")
+def disable_user(user_id: str):
+    existing_user = get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    set_lifecycle_state(user_id, "disabled")
+    return get_user_by_id(user_id)
+
+@app.post("/users/{user_id}/reactivate")
+def enable_user(user_id: str):
+    existing_user = get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    set_lifecycle_state(user_id, "active")
+    return get_user_by_id(user_id)
+
+@app.post("/users/{user_id}/roles/{role_id}")
+def assign_role(user_id: str, role_id: int):
+    existing_user = get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    existing_role = get_role_by_id(role_id)
+    if not existing_role:
+        raise HTTPException(
+            status_code=404,
+            detail="Role not found"
+        )
+
+    try:
+        assign_role_to_user(user_id, role_id)
+        return get_roles_for_user(user_id)
+    except sqlite3.IntegrityError:
+        raise HTTPException(
+            status_code=409,
+            detail="Role already assigned to user"
+        )
+
+@app.get("/users/{user_id}/roles")
+def get_user_roles(user_id: str):
+    existing_user = get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return get_roles_for_user(user_id)
+
+@app.delete("/users/{user_id}/roles/{role_id}")
+def remove_role(user_id: str, role_id: int):
+    existing_user = get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    existing_role = get_role_by_id(role_id)
+    if not existing_role:
+        raise HTTPException(
+            status_code=404,
+            detail="Role not found"
+        )
+
+    removed =remove_role_from_user(user_id, role_id)
+    if not removed:
+        raise HTTPException(
+            status_code=404,
+            detail="Role not assigned to user"
+        )
+    
+    return get_roles_for_user(user_id)
