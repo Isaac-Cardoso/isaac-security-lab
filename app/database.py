@@ -160,3 +160,15 @@ def remove_role_from_user(user_id, role_id):
         conn.close()
 
     return deleted > 0
+
+def get_all_roles():
+    conn = get_db_connection()
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM roles")
+        roles = [dict(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
+    return roles

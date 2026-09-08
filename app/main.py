@@ -1,17 +1,19 @@
-from fastapi import FastAPI
-from app.database import get_all_users
-from app.database import create_user
-from app.database import get_user_by_id
-from app.database import update_user_by_id
-from app.database import set_lifecycle_state
-from app.database import assign_role_to_user
-from app.database import get_role_by_id
-from app.database import get_roles_for_user
-from app.database import remove_role_from_user
-import sqlite3
-from fastapi import HTTPException
-from app.models import User
-from app.models import UserUpdate
+from fastapi import FastAPI, HTTPException
+
+from app.database import (
+    assign_role_to_user,
+    create_user,
+    get_all_roles,
+    get_all_users,
+    get_role_by_id,
+    get_roles_for_user,
+    get_user_by_id,
+    remove_role_from_user,
+    set_lifecycle_state,
+    update_user_by_id,
+)
+
+from app.models import User, UserUpdate
 
 app = FastAPI()
 
@@ -148,3 +150,7 @@ def remove_role(user_id: str, role_id: int):
         )
     
     return get_roles_for_user(user_id)
+
+@app.get("/roles")
+def get_roles():
+    return get_all_roles()
