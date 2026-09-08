@@ -1,5 +1,5 @@
+import sqlite3
 from fastapi import FastAPI, HTTPException
-
 from app.database import (
     assign_role_to_user,
     create_user,
