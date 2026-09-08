@@ -1,8 +1,13 @@
 import sqlite3
 
-def get_all_users():
+def get_db_connection():
     conn = sqlite3.connect("data/security_lab.db")
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+def get_all_users():
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -14,7 +19,7 @@ def get_all_users():
     return users
 
 def create_user(userID, firstName, lastName, department, jobTitle):
-    conn = sqlite3.connect("data/security_lab.db")
+    conn = get_db_connection()
     
     try:
         cursor = conn.cursor()
@@ -39,8 +44,8 @@ def create_user(userID, firstName, lastName, department, jobTitle):
         conn.close()
 
 def get_user_by_id(user_id):
-    conn = sqlite3.connect("data/security_lab.db")
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
+
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE userID = ?", (user_id,))
@@ -55,7 +60,7 @@ def get_user_by_id(user_id):
     return None
 
 def update_user_by_id(user_id, updates):
-    conn = sqlite3.connect("data/security_lab.db")
+    conn = get_db_connection()
     
     try:
         cursor = conn.cursor()
@@ -76,7 +81,7 @@ def update_user_by_id(user_id, updates):
         conn.close()
 
 def set_lifecycle_state(user_id, lifecycle_state):
-    conn = sqlite3.connect("data/security_lab.db")
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -87,8 +92,7 @@ def set_lifecycle_state(user_id, lifecycle_state):
         conn.close()
 
 def assign_role_to_user(user_id, role_id):
-    conn = sqlite3.connect("data/security_lab.db")
-    conn.execute("PRAGMA foreign_keys = ON")
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -101,8 +105,7 @@ def assign_role_to_user(user_id, role_id):
         conn.close()
 
 def get_role_by_id(role_id):
-    conn = sqlite3.connect("data/security_lab.db")
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -122,8 +125,7 @@ def get_role_by_id(role_id):
     return None
 
 def get_roles_for_user(user_id):
-    conn = sqlite3.connect("data/security_lab.db")
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -144,7 +146,7 @@ def get_roles_for_user(user_id):
     return roles
 
 def remove_role_from_user(user_id, role_id):
-    conn = sqlite3.connect("data/security_lab.db")
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
